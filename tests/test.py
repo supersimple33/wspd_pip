@@ -3,7 +3,10 @@ import wspd
 
 # The point class is registered with its docstring as the class name (existing behaviour),
 # so we locate it dynamically rather than using wspd.point directly.
-_point = getattr(wspd, [x for x in dir(wspd) if 'point' in x.lower()][0])
+_point_names = [x for x in dir(wspd) if 'point' in x.lower()]
+if not _point_names:
+    raise RuntimeError("wspd module does not expose a 'point' class")
+_point = getattr(wspd, _point_names[0])
 
 
 def make_points(n=5, dim=2):

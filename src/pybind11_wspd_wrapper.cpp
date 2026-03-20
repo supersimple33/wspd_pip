@@ -19,10 +19,12 @@ PYBIND11_MODULE(wspd, m)
             auto dumbells = run_wspd(num, dim, sep_const, pts);
             py::list result;
             for (auto& dumbell : dumbells) {
-                py::array_t<int> arr1(dumbell.first.size());
-                std::copy(dumbell.first.begin(), dumbell.first.end(), arr1.mutable_data());
-                py::array_t<int> arr2(dumbell.second.size());
-                std::copy(dumbell.second.begin(), dumbell.second.end(), arr2.mutable_data());
+                auto* v1 = new vector<int>(std::move(dumbell.first));
+                auto* v2 = new vector<int>(std::move(dumbell.second));
+                py::capsule cap1(v1, [](void* p) { delete static_cast<vector<int>*>(p); });
+                py::capsule cap2(v2, [](void* p) { delete static_cast<vector<int>*>(p); });
+                py::array_t<int> arr1({v1->size()}, {sizeof(int)}, v1->data(), cap1);
+                py::array_t<int> arr2({v2->size()}, {sizeof(int)}, v2->data(), cap2);
                 result.append(py::make_tuple(arr1, arr2));
             }
             return result;
